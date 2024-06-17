@@ -12,7 +12,10 @@
 #include <gnb/rls/task.hpp>
 #include <utils/constants.hpp>
 #include <utils/libc_error.hpp>
-
+#include <iostream>
+#include <arpa/inet.h> 
+#include <linux/ip.h>  
+#include <string.h>     
 #include <asn/ngap/ASN_NGAP_QosFlowSetupRequestItem.h>
 
 namespace nr::gnb
@@ -178,6 +181,29 @@ void GtpTask::handleUeContextDelete(int ueId)
     m_ueContexts.erase(ueId);
 }
 
+void extract_inner_ip_header(const uint8_t *data, __be32 *inner_src_ip, __be32 *inner_dst_ip) {
+    const struct iphdr *inner_iph = reinterpret_cast<const struct iphdr *>(data);
+
+    *inner_src_ip = inner_iph->saddr;
+    *inner_dst_ip = inner_iph->daddr;
+}
+
+bool uplink_or_downlink(const char *ip) {
+    return strncmp(ip, "10.60.0.", 8) == 0 || strncmp(ip, "10.61.0.", 8) == 0;
+}
+
+uint8_t determine_qfi(const char *src_ip, const char *dst_ip) {
+    if ((uplink_or_downlink(src_ip) && strcmp(dst_ip, "10.100.200.2") == 0) ||
+        (uplink_or_downlink(dst_ip) && strcmp(src_ip, "10.100.200.2") == 0)) {
+        return 1;
+    } else if ((uplink_or_downlink(src_ip) && strcmp(dst_ip, "10.100.200.3") == 0) ||
+               (uplink_or_downlink(dst_ip) && strcmp(src_ip, "10.100.200.3") == 0)) {
+        return 2;
+    } else {
+        return 0;
+    }
+}
+
 void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
 {
     const uint8_t *data = pdu.data();
@@ -185,6 +211,19 @@ void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
     // ignore non IPv4 packets
     if ((data[0] >> 4 & 0xF) != 4)
         return;
+
+    // Extract the source and destination IP addresses
+    __be32 src_ip, dst_ip;
+    extract_inner_ip_header(data, &src_ip, &dst_ip);
+
+    char srcIpStr[INET_ADDRSTRLEN];
+    char dstIpStr[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &src_ip, srcIpStr, INET_ADDRSTRLEN);
+    inet_ntop(AF_INET, &dst_ip, dstIpStr, INET_ADDRSTRLEN);
+
+    uint8_t qfi_to_mark = determine_qfi(srcIpStr, dstIpStr);
+    std::cout << "Source IP: " << srcIpStr << ", Destination IP: " << dstIpStr << ", QFI: " << static_cast<int>(qfi) << std::endl;
+
 
     uint64_t sessionInd = MakeSessionResInd(ueId, psi);
 
@@ -205,7 +244,8 @@ void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
 
         auto ul = std::make_unique<gtp::UlPduSessionInformation>();
         // TODO: currently using first QSI
-        ul->qfi = static_cast<int>(pduSession->qosFlows->list.array[0]->qosFlowIdentifier);
+        ul->qfi = qfi_to_mark
+        //ul->qfi = static_cast<int>(pduSession->qosFlows->list.array[0]->qosFlowIdentifier);
 
         auto cont = std::make_unique<gtp::PduSessionContainerExtHeader>();
         cont->pduSessionInformation = std::move(ul);
