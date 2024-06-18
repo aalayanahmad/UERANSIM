@@ -14,7 +14,7 @@
 #include <thread>
 #include <unordered_map>
 #include <vector>
-
+#include <linux/types.h> 
 #include <gnb/nts.hpp>
 #include <lib/udp/server_task.hpp>
 #include <utils/logger.hpp>
