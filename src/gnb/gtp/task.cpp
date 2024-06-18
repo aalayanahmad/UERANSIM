@@ -188,16 +188,14 @@ void extract_inner_ip_header(const uint8_t *data, __be32 *inner_src_ip, __be32 *
     *inner_dst_ip = inner_iph->daddr;
 }
 
-bool uplink_or_downlink(const char *ip) {
+bool uplink(const char *ip) {
     return strncmp(ip, "10.60.0.", 8) == 0 || strncmp(ip, "10.61.0.", 8) == 0;
 }
 
 uint8_t determine_qfi(const char *src_ip, const char *dst_ip) {
-    if ((uplink_or_downlink(src_ip) && strcmp(dst_ip, "10.100.200.2") == 0) ||
-        (uplink_or_downlink(dst_ip) && strcmp(src_ip, "10.100.200.2") == 0)) {
+    if (uplink(src_ip) && strcmp(dst_ip, "10.100.200.2") == 0) {
         return 1;
-    } else if ((uplink_or_downlink(src_ip) && strcmp(dst_ip, "10.100.200.3") == 0) ||
-               (uplink_or_downlink(dst_ip) && strcmp(src_ip, "10.100.200.3") == 0)) {
+    } else if (uplink(src_ip) && strcmp(dst_ip, "10.100.200.3") == 0){
         return 2;
     } else {
         return 0;
@@ -222,7 +220,6 @@ void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
     inet_ntop(AF_INET, &dst_ip, dstIpStr, INET_ADDRSTRLEN);
 
     uint8_t qfi_to_mark = determine_qfi(srcIpStr, dstIpStr);
-    std::cout << "Source IP: " << srcIpStr << ", Destination IP: " << dstIpStr << ", QFI: " << static_cast<int>(qfi) << std::endl;
 
 
     uint64_t sessionInd = MakeSessionResInd(ueId, psi);

@@ -59,7 +59,7 @@ class GtpTask : public NtsTask
 
    
     void extract_inner_ip_header(const uint8_t *data, __be32 *inner_src_ip, __be32 *inner_dst_ip);
-    bool uplink_or_downlink(const char *ip);
+    bool uplink(const char *ip);
     uint8_t determine_qfi(const char *src_ip, const char *dst_ip);
 };
 
