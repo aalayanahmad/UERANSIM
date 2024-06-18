@@ -15,7 +15,7 @@
 #include <iostream>
 #include <arpa/inet.h> 
 #include <linux/ip.h>  
-#include <string.h>     
+#include <linux/types.h>   
 #include <asn/ngap/ASN_NGAP_QosFlowSetupRequestItem.h>
 
 namespace nr::gnb
