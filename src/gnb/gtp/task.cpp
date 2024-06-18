@@ -181,7 +181,7 @@ void GtpTask::handleUeContextDelete(int ueId)
     m_ueContexts.erase(ueId);
 }
 
-void GtpTask::void extract_inner_ip_header(const uint8_t *data, __be32 *inner_src_ip, __be32 *inner_dst_ip) {
+void GtpTask::extract_inner_ip_header(const uint8_t *data, __be32 *inner_src_ip, __be32 *inner_dst_ip) {
     const struct iphdr *inner_iph = reinterpret_cast<const struct iphdr *>(data);
 
     *inner_src_ip = inner_iph->saddr;
