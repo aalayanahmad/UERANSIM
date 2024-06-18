@@ -205,6 +205,7 @@ uint8_t determine_qfi(const char *src_ip, const char *dst_ip) {
 void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
 {
     const uint8_t *data = pdu.data();
+    
 
     // ignore non IPv4 packets
     if ((data[0] >> 4 & 0xF) != 4)
@@ -241,7 +242,7 @@ void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
 
         auto ul = std::make_unique<gtp::UlPduSessionInformation>();
         // TODO: currently using first QSI
-        ul->qfi = qfi_to_mark
+        ul->qfi = qfi_to_mark;
         //ul->qfi = static_cast<int>(pduSession->qosFlows->list.array[0]->qosFlowIdentifier);
 
         auto cont = std::make_unique<gtp::PduSessionContainerExtHeader>();
