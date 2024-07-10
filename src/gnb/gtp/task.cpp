@@ -15,7 +15,11 @@
 #include <iostream>
 #include <arpa/inet.h> 
 #include <linux/ip.h>  
+#include <optional.h>  
+#include <cstdint>
 #include <linux/types.h>   
+#include <netinet/ip.h>
+#include <netinet/tcp.h>
 #include <asn/ngap/ASN_NGAP_QosFlowSetupRequestItem.h>
 
 namespace nr::gnb
@@ -192,6 +196,13 @@ bool GtpTask::uplink(const char *ip) {
     return strncmp(ip, "10.60.0.", 8) == 0 || strncmp(ip, "10.61.0.", 8) == 0;
 }
 
+bool GtpTask:toBeMonitored(const char *src_ip, const char *dst_ip) {
+    if (uplink(src_ip) && strcmp(dst_ip, "10.100.200.2") == 0) || (uplink(src_ip) && strcmp(dst_ip, "10.100.200.3") == 0){
+        return true;
+    }
+    return false;
+}
+
 uint8_t GtpTask::determine_qfi(const char *src_ip, const char *dst_ip) {
     if (uplink(src_ip) && strcmp(dst_ip, "10.100.200.2") == 0) {
         return 1;
@@ -200,6 +211,20 @@ uint8_t GtpTask::determine_qfi(const char *src_ip, const char *dst_ip) {
     } else {
         return 0;
     }
+}
+
+std::optional<uint32_t> GtpTask::extractUlDelayResult(const uint8_t *data)
+{
+    const struct iphdr *inner_iph = reinterpret_cast<const struct iphdr *>(data);
+    size_t ip_header_len = ip_header->ihl * 4;
+
+    const struct tcphdr *tcp_header = reinterpret_cast<const struct tcphdr*>(data + ip_header_len);
+    size_t tcp_header_len = tcp_header->doff * 4;
+
+    const uint8_t *integer_location = data + ip_header_len + tcp_header_len;
+
+    uint32_t appended_integer = *reinterpret_cast<const uint32_t*>(integer_location);
+    return ntohl(appended_integer); 
 }
 
 void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
@@ -230,7 +255,7 @@ void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
         m_logger->err("Uplink data failure, PDU session not found. UE[%d] PSI[%d]", ueId, psi);
         return;
     }
-
+    int appended_integer = extractIntegerBeforeTcpPayload(data);
     auto &pduSession = m_pduSessions[sessionInd];
 
     if (m_rateLimiter->allowUplinkPacket(sessionInd, static_cast<int64_t>(pdu.length())))
@@ -243,6 +268,9 @@ void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
         auto ul = std::make_unique<gtp::UlPduSessionInformation>();
         // TODO: currently using first QSI
         ul->qfi = qfi_to_mark;
+        if toBeMonitored(srcIpStr, dstIpStr){
+        ul->ulDelayResult = appended_integer;
+        }
         //ul->qfi = static_cast<int>(pduSession->qosFlows->list.array[0]->qosFlowIdentifier);
 
         auto cont = std::make_unique<gtp::PduSessionContainerExtHeader>();
