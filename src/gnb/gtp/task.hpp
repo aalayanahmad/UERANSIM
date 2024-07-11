@@ -62,6 +62,7 @@ class GtpTask : public NtsTask
     bool uplink(const char *ip);
     bool toBeMonitored(const char *src_ip, const char *dst_ip)
     uint8_t determine_qfi(const char *src_ip, const char *dst_ip);
+    std::optional<uint32_t> extractUlDelayResult(const uint8_t *data)
 };
 
 } // namespace nr::gnb
