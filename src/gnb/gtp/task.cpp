@@ -18,7 +18,6 @@
 #include <optional> 
 #include <cstdint>
 #include <linux/types.h>   
-#include <netinet/ip.h>
 #include <netinet/tcp.h>
 #include <asn/ngap/ASN_NGAP_QosFlowSetupRequestItem.h>
 
@@ -196,7 +195,7 @@ bool GtpTask::uplink(const char *ip) {
     return strncmp(ip, "10.60.0.", 8) == 0 || strncmp(ip, "10.61.0.", 8) == 0;
 }
 
-bool GtpTask:toBeMonitored(const char *src_ip, const char *dst_ip) {
+bool GtpTask::toBeMonitored(const char *src_ip, const char *dst_ip) {
     if (uplink(src_ip) && strcmp(dst_ip, "10.100.200.2") == 0) || (uplink(src_ip) && strcmp(dst_ip, "10.100.200.3") == 0){
         return true;
     }
@@ -215,7 +214,7 @@ uint8_t GtpTask::determine_qfi(const char *src_ip, const char *dst_ip) {
 
 std::optional<uint32_t> GtpTask::extractUlDelayResult(const uint8_t *data)
 {
-    const struct iphdr *inner_iph = reinterpret_cast<const struct iphdr *>(data);
+    const struct iphdr *ip_header = reinterpret_cast<const struct iphdr *>(data);
     size_t ip_header_len = ip_header->ihl * 4;
 
     const struct tcphdr *tcp_header = reinterpret_cast<const struct tcphdr*>(data + ip_header_len);
@@ -223,10 +222,13 @@ std::optional<uint32_t> GtpTask::extractUlDelayResult(const uint8_t *data)
 
     const uint8_t *integer_location = data + ip_header_len + tcp_header_len;
 
+    if (remaining_data_len < sizeof(uint32_t)) {
+        return std::nullopt;
+    }
+
     uint32_t appended_integer = *reinterpret_cast<const uint32_t*>(integer_location);
     return ntohl(appended_integer); 
 }
-
 void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
 {
     const uint8_t *data = pdu.data();
@@ -268,7 +270,7 @@ void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
         auto ul = std::make_unique<gtp::UlPduSessionInformation>();
         // TODO: currently using first QSI
         ul->qfi = qfi_to_mark;
-        if toBeMonitored(srcIpStr, dstIpStr){
+        if (toBeMonitored(srcIpStr, dstIpStr)){
             ul->ulDelayResult = appended_integer;
         }
         //ul->qfi = static_cast<int>(pduSession->qosFlows->list.array[0]->qosFlowIdentifier);
