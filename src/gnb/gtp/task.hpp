@@ -19,6 +19,7 @@
 #include <lib/udp/server_task.hpp>
 #include <utils/logger.hpp>
 #include <utils/nts.hpp>
+#include <optional.h>  
 
 namespace nr::gnb
 {
