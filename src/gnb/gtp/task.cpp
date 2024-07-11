@@ -266,8 +266,11 @@ void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
         // TODO: currently using first QSI
         ul->qfi = qfi_to_mark;
         if (toBeMonitored(srcIpStr, dstIpStr)){
-            int appended_integer = extractUlDelayResult(data);
-            ul->ulDelayResult = appended_integer;
+            auto ulDelayResult = extractUlDelayResult(data);
+            if (ulDelayResult.has_value()) {
+                int appended_integer = ulDelayResult.value_or(0); 
+                ul->ulDelayResult = appended_integer;
+            }
         }
         //ul->qfi = static_cast<int>(pduSession->qosFlows->list.array[0]->qosFlowIdentifier);
 
