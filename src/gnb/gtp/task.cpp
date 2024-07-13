@@ -264,8 +264,8 @@ void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
 
         auto ul = std::make_unique<gtp::UlPduSessionInformation>();
         // TODO: currently using first QSI
-        ul->qfi = qfi_to_mark;
         if (toBeMonitored(srcIpStr, dstIpStr)){
+			ul->qfi = qfi_to_mark;
 			ul->qmp = true;
             auto aresult = extractUlDelayResult(data);
             if (aresult.has_value()) {
