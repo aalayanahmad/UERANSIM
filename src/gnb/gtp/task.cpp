@@ -195,7 +195,7 @@ bool GtpTask::uplink(const char *ip) {
     return strncmp(ip, "10.60.0.", 8) == 0 || strncmp(ip, "10.61.0.", 8) == 0;
 }
 
-bool nr::gnb::GtpTask::toBeMonitored(const char *src_ip, const char *dst_ip) {
+bool nr::gnb::GtpTask::	toBeMonitored(const char *src_ip, const char *dst_ip) {
     if ((uplink(src_ip) && strcmp(dst_ip, "10.100.200.2") == 0) || (uplink(src_ip) && strcmp(dst_ip, "10.100.200.3") == 0)) {
         return true;
     }
@@ -266,9 +266,10 @@ void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
         // TODO: currently using first QSI
         ul->qfi = qfi_to_mark;
         if (toBeMonitored(srcIpStr, dstIpStr)){
-            auto ulDelayResult = extractUlDelayResult(data);
-            if (ulDelayResult.has_value()) {
-                int appended_integer = ulDelayResult.value_or(0); 
+			ul->qmp = true;
+            auto aresult = extractUlDelayResult(data);
+            if (aresult.has_value()) {
+                int appended_integer = aresult.value_or(0); 
                 ul->ulDelayResult = appended_integer;
             }
         }
