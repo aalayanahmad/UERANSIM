@@ -266,7 +266,7 @@ void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
         // TODO: currently using first QSI
         if (toBeMonitored(srcIpStr, dstIpStr)){
 			ul->qfi = qfi_to_mark;
-			ul->qmp = true;
+			ul->qmp = false;
             auto aresult = extractUlDelayResult(data);
             if (aresult.has_value()) {
                 int appended_integer = aresult.value_or(0); 
