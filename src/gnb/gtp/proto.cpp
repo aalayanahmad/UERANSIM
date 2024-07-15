@@ -381,10 +381,10 @@ bool PduSessionInformation::Encode(const PduSessionInformation &pdu, OctetString
             {1, snp},
         }));
         
-        if (ul.dlDelayResult.has_value())
+        if (ul.ulDelayResult.has_value())
          stream.appendOctet(bits::Ranged8({
             {4, 0},
-            {4, ul.dlDelayResult.value()},
+            {4, ul.ulDelayResult.value()},
         }));
 
         stream.appendOctet(bits::Ranged8({
@@ -399,8 +399,8 @@ bool PduSessionInformation::Encode(const PduSessionInformation &pdu, OctetString
             stream.appendOctet8(!ul.ulSendingTs.has_value() ? 0 : ul.ulSendingTs.value());
         }
 
-        if (ul.ulDelayResult.has_value())
-            stream.appendOctet4(ul.ulDelayResult.value());
+        if (ul.dlDelayResult.has_value())
+            stream.appendOctet4(ul.dlDelayResult.value());
 
         if (snp)
             stream.appendOctet3(ul.ulQfiSeq.value());
