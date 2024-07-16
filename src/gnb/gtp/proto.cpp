@@ -373,7 +373,7 @@ bool PduSessionInformation::Encode(const PduSessionInformation &pdu, OctetString
 
         auto snp = ul.ulQfiSeq.has_value();
         bool ulDelayFalg = ul.ulDelayResult.has_value();
-        bool ulDeLVal = false;
+        auto ulDeLVal = 3;
         if (ulDelayFalg) {ulDeLVal = ul.ulDelayResult.value();}
 
         stream.appendOctet(bits::Ranged8({
@@ -384,14 +384,14 @@ bool PduSessionInformation::Encode(const PduSessionInformation &pdu, OctetString
             {1, snp},
         }));
         
-        if (ulDelayFalg==true){
-            stream.appendOctet4(ulDeLVal);
-        }
-
         stream.appendOctet(bits::Ranged8({
             {2, 0},
             {6, ul.qfi},
         }));
+
+        if (ulDelayFalg==true){
+            stream.appendOctet4(ulDeLVal);
+        }
 
         if (ul.qmp)
         {
