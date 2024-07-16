@@ -227,7 +227,7 @@ std::optional<uint32_t> GtpTask::extractUlDelayResult(const uint8_t *data)
 }
 void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
 {
-    uint32_t myInteger = 3;
+    uint32_t myInteger = 5;
     std::optional<uint32_t> optionalInteger = myInteger;
     const uint8_t *data = pdu.data();
     
