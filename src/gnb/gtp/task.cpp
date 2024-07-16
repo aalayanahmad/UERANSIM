@@ -269,12 +269,12 @@ void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
         if (toBeMonitored(srcIpStr, dstIpStr)){
             ul->qmp = true;
             ul->qfi = qfi_to_mark;
-            ul->ulDelayResult = myInteger;
-            // auto aresult = extractUlDelayResult(data);
-            // if (aresult.has_value()) {
-            //     int appended_integer = aresult.value_or(0); 
-            //     ul->ulDelayResult = appended_integer;
-            // }
+            //ul->ulDelayResult = myInteger;
+            auto aresult = extractUlDelayResult(data);
+            if (aresult.has_value()) {
+                optionalInteger = aresult.value_or(0); 
+                ul->ulDelayResult = optionalInteger;
+             }
         }
         //ul->qfi = static_cast<int>(pduSession->qosFlows->list.array[0]->qosFlowIdentifier);
 
