@@ -200,18 +200,18 @@ bool GtpTask::uplink_from_slice2(const char *ip) {
 
 bool nr::gnb::GtpTask::	packets_to_be_monitored(const char *src_ip, const char *dst_ip) {
     //has to be one of the two services that we want
-    if ((uplinkFromSlice1(src_ip) && strcmp(dst_ip, "10.100.200.2") == 0) || (uplinkFromSlice1(src_ip) && strcmp(dst_ip, "10.100.200.3") == 0)) {
+    if ((uplinkFromSlice1(src_ip) && strcmp(dst_ip, "10.100.200.12") == 0) || (uplinkFromSlice1(src_ip) && strcmp(dst_ip, "10.100.200.16") == 0)) {
         return true;
     }
     return false;
 }
 
 uint8_t GtpTask::set_qfi(const char *src_ip, const char *dst_ip) {
-    if (uplink_from_slice1(src_ip) && strcmp(dst_ip, "10.100.200.2") == 0) {
+    if (uplink_from_slice1(src_ip) && strcmp(dst_ip, "10.100.200.12") == 0) {
         return 1; //bank
-    } else if (uplink_from_slice1(src_ip) && strcmp(dst_ip, "10.100.200.3") == 0){
+    } else if (uplink_from_slice1(src_ip) && strcmp(dst_ip, "10.100.200.16") == 0){
         return 2; //text
-    } else if (uplink_from_slice2(src_ip) && strcmp(dst_ip, "10.100.200.3") == 0){
+    } else if (uplink_from_slice2(src_ip) && strcmp(dst_ip, "10.100.200.17") == 0){
         return 3; //video
     } else {
         return 0;
