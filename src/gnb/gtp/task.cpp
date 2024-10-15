@@ -184,40 +184,36 @@ void GtpTask::handleUeContextDelete(int ueId)
     m_ueContexts.erase(ueId);
 }
 
+//Ahmad added
 void GtpTask::extract_inner_ip_header(const uint8_t *data, __be32 *inner_src_ip, __be32 *inner_dst_ip) {
     const struct iphdr *inner_iph = reinterpret_cast<const struct iphdr *>(data);
     *inner_src_ip = inner_iph->saddr;
     *inner_dst_ip = inner_iph->daddr;
 }
 
-bool GtpTask::uplink_from_slice1(const char *ip) {
-    return strncmp(ip, "10.60.0.", 8) == 0;
-}
-
-bool GtpTask::uplink_from_slice2(const char *ip) {
-    return strncmp(ip, "10.61.0.", 8) == 0;
-}
-
+//Ahmad added
 bool nr::gnb::GtpTask::	packets_to_be_monitored(const char *src_ip, const char *dst_ip) {
     //has to be one of the two services that we want
-    if ((uplinkFromSlice1(src_ip) && strcmp(dst_ip, "10.100.200.12") == 0) || (uplinkFromSlice1(src_ip) && strcmp(dst_ip, "10.100.200.16") == 0)) {
+    if ((strncmp(src_ip, "10.60.0.", 8) == 0) && (strcmp(dst_ip, "10.100.200.12") == 0 || strcmp(dst_ip, "10.100.200.16") == 0)) {
         return true;
     }
     return false;
 }
 
+//Ahmad added
 uint8_t GtpTask::set_qfi(const char *src_ip, const char *dst_ip) {
-    if (uplink_from_slice1(src_ip) && strcmp(dst_ip, "10.100.200.12") == 0) {
-        return 1; //bank
-    } else if (uplink_from_slice1(src_ip) && strcmp(dst_ip, "10.100.200.16") == 0){
-        return 2; //text
-    } else if (uplink_from_slice2(src_ip) && strcmp(dst_ip, "10.100.200.17") == 0){
-        return 3; //video
+    if (strncmp(src_ip, "10.60.0.", 8) == 0 && strcmp(dst_ip, "10.100.200.12") == 0) {
+        return 1; //bank qfi
+    } else if (strncmp(src_ip, "10.60.0.", 8) == 0 && strcmp(dst_ip, "10.100.200.16") == 0){
+        return 2; //text qfi
+    } else if (strncmp(ip, "10.61.0.", 8) == 0 && strcmp(dst_ip, "10.100.200.17") == 0){
+        return 3; //video qfi
     } else {
-        return 0;
+        return 0; //default
     }
 }
 
+//Ahmad added
 std::optional<uint32_t> GtpTask::extract_ul_delay(const uint8_t *data)
 {
     const struct iphdr *ip_header = reinterpret_cast<const struct iphdr *>(data);
@@ -231,10 +227,11 @@ std::optional<uint32_t> GtpTask::extract_ul_delay(const uint8_t *data)
     uint32_t appended_integer = *reinterpret_cast<const uint32_t*>(integer_location);
     return ntohl(appended_integer); 
 }
+
 void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
 {
-    uint32_t myInteger = 5;
-    std::optional<uint32_t> optionalInteger = myInteger;
+    uint32_t myInteger = 5; //Ahmad Added
+    std::optional<uint32_t> optionalInteger = myInteger; //Ahmad Added
     const uint8_t *data = pdu.data();
     
 
@@ -242,7 +239,7 @@ void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
     if ((data[0] >> 4 & 0xF) != 4)
         return;
 
-    // Extract the source and destination IP addresses
+    //Ahmad Added
     __be32 src_ip, dst_ip;
     extract_inner_ip_header(data, &src_ip, &dst_ip);
 
@@ -250,9 +247,6 @@ void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
     char dstIpStr[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &src_ip, srcIpStr, INET_ADDRSTRLEN);
     inet_ntop(AF_INET, &dst_ip, dstIpStr, INET_ADDRSTRLEN);
-
-    uint8_t qfi_to_mark = set_qfi(srcIpStr, dstIpStr);
-
 
     uint64_t sessionInd = MakeSessionResInd(ueId, psi);
 
@@ -274,13 +268,16 @@ void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
         // TODO: currently using first QSI
         if (packets_to_be_monitored(srcIpStr, dstIpStr)){
             ul->qmp = true; //is a monitoring packet
-            ul->qfi = qfi_to_mark;
+            ul->qfi = set_qfi(srcIpStr, dstIpStr);
             //ul->ulDelayResult = myInteger;
             auto aresult = extractUlDelayResult(data);
             if (aresult.has_value()) {
                 optionalInteger = aresult.value_or(0); 
                 ul->ulDelayResult = optionalInteger; //to indicate i have an Ul delay result
              }
+        }
+        else {
+            ul->qfi = set_qfi(srcIpStr, dstIpStr);
         }
         //ul->qfi = static_cast<int>(pduSession->qosFlows->list.array[0]->qosFlowIdentifier);
 
