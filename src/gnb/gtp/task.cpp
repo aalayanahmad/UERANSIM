@@ -206,7 +206,7 @@ uint8_t GtpTask::set_qfi(const char *src_ip, const char *dst_ip) {
         return 1; //bank qfi
     } else if (strncmp(src_ip, "10.60.0.", 8) == 0 && strcmp(dst_ip, "10.100.200.16") == 0){
         return 2; //text qfi
-    } else if (strncmp(ip, "10.61.0.", 8) == 0 && strcmp(dst_ip, "10.100.200.17") == 0){
+    } else if (strncmp(src_ip, "10.61.0.", 8) == 0 && strcmp(dst_ip, "10.100.200.17") == 0){
         return 3; //video qfi
     } else {
         return 0; //default
@@ -270,7 +270,7 @@ void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
             ul->qmp = true; //is a monitoring packet
             ul->qfi = set_qfi(srcIpStr, dstIpStr);
             //ul->ulDelayResult = myInteger;
-            auto aresult = extractUlDelayResult(data);
+            auto aresult = extract_ul_delay(data);
             if (aresult.has_value()) {
                 optionalInteger = aresult.value_or(0); 
                 ul->ulDelayResult = optionalInteger; //to indicate i have an Ul delay result
