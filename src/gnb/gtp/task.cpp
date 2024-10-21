@@ -215,26 +215,29 @@ uint8_t GtpTask::set_qfi(const char *src_ip, const char *dst_ip) {
 
 // Ahmad added
 
-std::optional<uint32_t> GtpTask::extract_ul_delay(const uint8_t *data)
-{
-    const struct iphdr *ip_header = reinterpret_cast<const struct iphdr *>(data);
-    size_t ip_header_len = ip_header->ihl * 4;
+// std::optional<uint32_t> GtpTask::extract_ul_delay(const uint8_t *data, int64_t data_length)
+// {
+//     const struct iphdr *ip_header = reinterpret_cast<const struct iphdr *>(data);
+//     size_t ip_header_len = ip_header->ihl * 4;
 
-    const struct tcphdr *tcp_header = reinterpret_cast<const struct tcphdr*>(data + ip_header_len);
-    size_t tcp_header_len = tcp_header->doff * 4;
+//     const struct tcphdr *tcp_header = reinterpret_cast<const struct tcphdr*>(data + ip_header_len);
+//     size_t tcp_header_len = tcp_header->doff * 4;
 
-    const uint8_t *integer_location = data + ip_header_len + tcp_header_len;
-    if(integer_location+4>data)
-    uint32_t appended_integer = *reinterpret_cast<const uint32_t*>(integer_location);
-    return ntohl(appended_integer); 
-}
+//     const uint8_t *integer_location = data + ip_header_len + tcp_header_len;
+//     if (integer_location + 4 > data_length){
+
+//     }
+//     else{
+//         uint32_t appended_integer = *reinterpret_cast<const uint32_t*>(integer_location);
+//         return ntohl(appended_integer); } 
+// }
 
 void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
 {
-    uint32_t myInteger = 5; //Ahmad Added
-    std::optional<uint32_t> optionalInteger = myInteger; //Ahmad Added
+    //uint32_t myInteger = 5; //Ahmad Added
+    //std::optional<uint32_t> optionalInteger = myInteger; //Ahmad Added
     const uint8_t *data = pdu.data();
-     int data_length = pdu.length(); // Get the length of the data
+    //int64_t data_length = static_cast<int64_t>(pdu.length());  // Get the length of the data
     
 
     // ignore non IPv4 packets
@@ -271,11 +274,10 @@ void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
         if (packets_to_be_monitored(srcIpStr, dstIpStr)){
             ul->qmp = true; //is a monitoring packet
             ul->qfi = set_qfi(srcIpStr, dstIpStr);
-            //ul->ulDelayResult = myInteger;
+            ul->ulDelayResult = 3;
             //auto aresult = extract_ul_delay(data, data_length);
-           // if (aresult.has_value()) {
-               // optionalInteger = aresult.value_or(0); 
-            ul->ulDelayResult = 5; //optionalInteger; //to indicate i have an Ul delay result
+            //if (aresult.has_value()) {
+               // ul->ulDelayResult = aresult.value(); //optionalInteger; //to indicate i have an Ul delay result
              //}
         }
         else {
