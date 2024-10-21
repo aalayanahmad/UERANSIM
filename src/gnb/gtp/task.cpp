@@ -273,7 +273,7 @@ void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
             auto aresult = extract_ul_delay(data);
             if (aresult.has_value()) {
                 optionalInteger = aresult.value_or(0); 
-                ul->ulDelayResult = optionalInteger; //to indicate i have an Ul delay result
+                ul->ulDelayResult = 5; //optionalInteger; //to indicate i have an Ul delay result
              }
         }
         else {
