@@ -62,7 +62,7 @@ class GtpTask : public NtsTask
     void extract_inner_ip_header(const uint8_t *data, __be32 *inner_src_ip, __be32 *inner_dst_ip);
     bool packets_to_be_monitored(const char *src_ip, const char *dst_ip);
     uint8_t set_qfi(const char *src_ip, const char *dst_ip);
-    //std::optional<uint32_t> extract_ul_delay(const uint8_t *data);
+    std::optional<uint32_t> extract_ul_delay(const uint8_t *data, int64_t data_length);
 };
 
 } // namespace nr::gnb
