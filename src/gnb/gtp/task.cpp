@@ -223,8 +223,8 @@ std::optional<uint32_t> GtpTask::extract_ul_delay(const uint8_t *data, int64_t d
     size_t tcp_header_len = tcp_header->doff * 4;
 
     const uint8_t *integer_location = data + ip_header_len + tcp_header_len;
-    if (integer_location + 4 > data_length){
-
+    if (integer_location + 4 > data + data_length){
+        return std::nullopt; 
     }
     else{
         uint32_t appended_integer = *reinterpret_cast<const uint32_t*>(integer_location);
@@ -270,16 +270,16 @@ void GtpTask::handleUplinkData(int ueId, int psi, OctetString &&pdu)
 
         auto ul = std::make_unique<gtp::UlPduSessionInformation>();
         // TODO: currently using first QSI
-        if (packets_to_be_monitored(srcIpStr, dstIpStr)){
+        auto aresult = extract_ul_delay(data, data_length);
+        if (packets_to_be_monitored(srcIpStr, dstIpStr)) && (aresult.has_value()){
             ul->qmp = true; //is a monitoring packet
             ul->qfi = set_qfi(srcIpStr, dstIpStr);
             //ul->ulDelayResult = 3;
-            auto aresult = extract_ul_delay(data, data_length);
-            if (aresult.has_value()) {
-                ul->ulDelayResult = aresult.value(); //optionalInteger; //to indicate i have an Ul delay result
-            }
+            ul->ulDelayResult = aresult.value(); //optionalInteger; //to indicate i have an Ul delay result
+            
         }
         else {
+            ul->qmp = false; //is a monitoring packet
             ul->qfi = set_qfi(srcIpStr, dstIpStr);
         }
         //ul->qfi = static_cast<int>(pduSession->qosFlows->list.array[0]->qosFlowIdentifier);
