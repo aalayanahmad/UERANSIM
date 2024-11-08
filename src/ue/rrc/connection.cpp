@@ -24,22 +24,7 @@ namespace nr::ue
 {
 
 static ASN_RRC_UL_CCCH_Message *ConstructSetupRequest(ASN_RRC_InitialUE_Identity_t initialUeId,
-                                                      ASN_RRC_EstablishmentCause_t establishmentCause)
-{
-    auto *pdu = asn::New<ASN_RRC_UL_CCCH_Message>();
-    pdu->message.present = ASN_RRC_UL_CCCH_MessageType_PR_c1;
-    pdu->message.choice.c1 = asn::NewFor(pdu->message.choice.c1);
-    pdu->message.choice.c1->present = ASN_RRC_UL_CCCH_MessageType__c1_PR_rrcSetupRequest;
-
-    auto &r = pdu->message.choice.c1->choice.rrcSetupRequest = asn::New<ASN_RRC_RRCSetupRequest>();
-    asn::DeepCopy(asn_DEF_ASN_RRC_InitialUE_Identity, initialUeId, &r->rrcSetupRequest.ue_Identity);
-    r->rrcSetupRequest.establishmentCause = establishmentCause;
-    asn::SetSpareBits<1>(r->rrcSetupRequest.spare);
-
-    return pdu;
-}
-
-void UeRrcTask::startConnectionEstablishment(OctetString &&nasPdu)
+   FtConnectionEstablishment(OctetString &&nasPdu)
 {
     /* Check the protocol state */
     if (m_state != ERrcState::RRC_IDLE)

@@ -194,7 +194,7 @@ void GtpTask::extract_inner_ip_header(const uint8_t *data, __be32 *inner_src_ip,
 //Ahmad added
 bool nr::gnb::GtpTask::	packets_to_be_monitored(const char *src_ip, const char *dst_ip) {
     //has to be one of the two services that we want
-    if ((strncmp(src_ip, "10.60.0.", 8) == 0) && (strcmp(dst_ip, "10.100.200.12") == 0 || strcmp(dst_ip, "10.100.200.16") == 0)) {
+    if ((strncmp(src_ip, "10.60.", 6) == 0) && (strcmp(dst_ip, "10.100.200.12") == 0 || strcmp(dst_ip, "10.100.200.16") == 0)) {
         return true;
     }
     return false;
@@ -202,18 +202,18 @@ bool nr::gnb::GtpTask::	packets_to_be_monitored(const char *src_ip, const char *
 
 //Ahmad added
 uint8_t GtpTask::set_qfi(const char *src_ip, const char *dst_ip) {
-    if (strncmp(src_ip, "10.60.0.", 8) == 0 && strcmp(dst_ip, "10.100.200.12") == 0) {
+    if (strncmp(src_ip, "10.60.", 6) == 0 && strcmp(dst_ip, "10.100.200.12") == 0) {
         return 1; //bank qfi
-    } else if (strncmp(src_ip, "10.60.0.", 8) == 0 && strcmp(dst_ip, "10.100.200.16") == 0){
+    } else if (strncmp(src_ip, "10.60.", 6) == 0 && strcmp(dst_ip, "10.100.200.16") == 0){
         return 2; //text qfi
-    } else if (strncmp(src_ip, "10.61.0.", 8) == 0 && strcmp(dst_ip, "10.100.200.17") == 0){
+    } else if (strncmp(src_ip, "10.61.", 6) == 0 && strcmp(dst_ip, "10.100.200.17") == 0){
         return 3; //video qfi
     } else {
         return 0; //default
     }
 }
 
-// Ahmad added
+//Ahmad added
 std::optional<uint32_t> GtpTask::extract_ul_delay(const uint8_t *data, int64_t data_length)
 {
     const struct iphdr *ip_header = reinterpret_cast<const struct iphdr *>(data);
