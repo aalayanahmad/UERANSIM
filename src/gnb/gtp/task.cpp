@@ -205,9 +205,9 @@ uint8_t GtpTask::set_qfi(const char *src_ip, const char *dst_ip) {
     if (strncmp(src_ip, "10.60.", 6) == 0 && strcmp(dst_ip, "10.100.200.12") == 0) {
         return 6; //bank qfi
     } else if (strncmp(src_ip, "10.60.", 6) == 0 && strcmp(dst_ip, "10.100.200.16") == 0){
-        return 7; //text qfi
+        return 8; //text qfi
     } else if (strncmp(src_ip, "10.61.", 6) == 0 && strcmp(dst_ip, "10.100.200.17") == 0){
-        return 8; //video qfi
+        return 7; //video qfi
     } else {
         return 0; //default
     }
