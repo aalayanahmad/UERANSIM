@@ -47,6 +47,7 @@ void NasSm::onTimerExpire(UeTimer &timer)
 void NasSm::onTransactionTimerExpire(int pti)
 {
     auto &pt = m_procedureTransactions[pti];
+    
     if (pt.state == EPtState::INACTIVE)
         return;
 
